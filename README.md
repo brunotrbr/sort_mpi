@@ -7,6 +7,9 @@ Execute o programa conforme exemplo abaixo:
 
 onde:
     *np eh o numero de processos*
+
     *run é o nome do programa*
-    *10 eh o tamanho do array*
+
+    *10 eh o tamanho do vetor*
+    
     *1 informa se quer imprimir no arquivo de saida, 0 para não imprimir nada*
