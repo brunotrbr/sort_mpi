@@ -145,9 +145,10 @@ int main(int argc, char *argv[])
             }
             
         } 
+        printf("proc_size: %d\n", proc_size);
         printf("Vetor final nao ordenado:\t");
         imprimeVetor(vetorFinal,tamanhoVetor);
-        //sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
+        sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
         printf("Vetor ordenado:\t");
         imprimeVetor(vetorFinal,tamanhoVetor);
         printf("acabou\n");
