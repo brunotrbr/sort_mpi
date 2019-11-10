@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
         printf("Tamanho do vetor: %d\n", tamanhoVetor);
         printf("Tamanho n vetores: %d | tamanho do ultimo vetor: %d\n\n", tamVetSplit, tamUltPos);
         printf("Vetor original:\t");
-        //imprimeVetor(vetor, tamanhoVetor);
+        imprimeVetor(vetor, tamanhoVetor);
         // Realiza o envio para os processadores
         for(rank = 1 ; rank < proc_size; rank++){
             if(rank == proc_size-1){
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Recv");
                 }
-                //imprimeVetor(ultPosVetSpl, tamUltPos);
+                imprimeVetor(ultPosVetSpl, tamUltPos);
                 juntaVetores(ultPosVetSpl, tamUltPos, vetorFinal, offset);
             } else {
                 // demais processadores
@@ -139,17 +139,17 @@ int main(int argc, char *argv[])
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Recv");
                 }
-                //imprimeVetor(nVetSpl, tamVetSplit);
+                imprimeVetor(nVetSpl, tamVetSplit);
                 juntaVetores(nVetSpl, tamVetSplit, vetorFinal, offset);
                 offset += tamVetSplit;
             }
             
         } 
-        //printf("Vetor final nao ordenado:\t");
-        //imprimeVetor(vetorFinal,tamanhoVetor);
+        printf("Vetor final nao ordenado:\t");
+        imprimeVetor(vetorFinal,tamanhoVetor);
         //sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
-        //printf("Vetor ordenado:\t");
-        //imprimeVetor(vetorFinal,tamanhoVetor);
+        printf("Vetor ordenado:\t");
+        imprimeVetor(vetorFinal,tamanhoVetor);
         printf("acabou\n");
     } else {
         ret = MPI_Comm_rank(MPI_COMM_WORLD, &my_Rank);
