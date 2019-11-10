@@ -13,10 +13,12 @@ void swap(int *xp, int *yp)
 	*yp = temp; 
 }
 
+// A function to implement bubble sort 
 void bubbleSort(int arr[], int n) 
 { 
 int i, j; 
 for (i = 0; i < n-1; i++)	 
+    // Last i elements are already in place 
 	for (j = 0; j < n-i-1; j++) 
 		if (arr[j] > arr[j+1]) 
 			swap(&arr[j], &arr[j+1]); 
@@ -96,27 +98,49 @@ void heapSort(int* array, int size)
     }
 }
 
+/**
+ * Ordenamento do vetor semi-ordenado utilizando HeapSort
+ * @param dst vetor desordenado, com partes ordenadas pelos nós escravos
+ * @param tamanhoDst tamanho do vetor
+ */
 void ordenaAposMpi(int dst[], int tamanhoDst){
     heapSort(dst,tamanhoDst);
 }
 
-void inicializaVetor(int vetor[], int tamanhoVetor){
+/**
+ * Inicializa o vetor com número randômicos inteiros positivos
+ * @param dst vetor que vai ser inicializado
+ * @param tamanhoDst tamanho do vetor 
+ */
+void inicializaVetor(int dst[], int tamanhoDst){
     srand(time(NULL));
     int i = 0;
-    for(i = 0 ; i < tamanhoVetor ; i++){
-        vetor[i] = rand() % (tamanhoVetor * 100);
+    for(i = 0 ; i < tamanhoDst ; i++){
+        dst[i] = rand() % (tamanhoDst * 100);
     }
 }
 
-void imprimeVetor(int vetor[], int tamanhoVetor){
+/**
+ * Imprime o vetor na tela
+ * @param dst vetor que vai ser impresso
+ * @param tamanhoDst tamanho do vetor 
+ */
+void imprimeVetor(int dst[], int tamanhoDst){
     int i = 0;
-    for(i = 0 ; i < tamanhoVetor ; i++){
-        printf("%d ",vetor[i]);
+    for(i = 0 ; i < tamanhoDst ; i++){
+        printf("%d ",dst[i]);
     }
     printf("\n\n");
 }
 
-void imprimeArquivo(int vetor[], int tamanhoVetor, char tipo, int imprimeSaida)
+/**
+ * Imprime os vetores no arquivo saida.txt
+ * @param dst vetor que vai ser impresso
+ * @param tamanhoDst tamanho do vetor 
+ * @param tipo tipo que vai ser impresso: [o] vetor original, [n] vetor não ordenado, [r] vetor ordenado
+ * @param imprimeSaida flag que indica se vai imprimir a saída. 1 para imprimir, 0 para não imprimir
+ */
+void imprimeArquivo(int dst[], int tamanhoDst, char tipo, int imprimeSaida)
 {
     if(imprimeSaida == 1){
         if(tipo == 'o'){
@@ -125,8 +149,8 @@ void imprimeArquivo(int vetor[], int tamanhoVetor, char tipo, int imprimeSaida)
             int i;
 
             fprintf(arquivo, "%s\n\t","Vetor original:");
-            for(i = 0; i < tamanhoVetor ; i++){
-                fprintf(arquivo,"%d ",vetor[i]);
+            for(i = 0; i < tamanhoDst ; i++){
+                fprintf(arquivo,"%d ",dst[i]);
             }
             fprintf(arquivo,"\n\n");
 
@@ -137,8 +161,8 @@ void imprimeArquivo(int vetor[], int tamanhoVetor, char tipo, int imprimeSaida)
             int i;
 
             fprintf(arquivo, "%s\n\t","Vetor final nao ordenado:");
-            for(i = 0; i < tamanhoVetor ; i++){
-                fprintf(arquivo,"%d ",vetor[i]);
+            for(i = 0; i < tamanhoDst ; i++){
+                fprintf(arquivo,"%d ",dst[i]);
             }
             fprintf(arquivo,"\n\n");
 
@@ -148,8 +172,8 @@ void imprimeArquivo(int vetor[], int tamanhoVetor, char tipo, int imprimeSaida)
             arquivo = fopen("saida.txt", "a+");
             int i;
             fprintf(arquivo, "%s\n\t","Vetor final ordenado:");
-            for(i = 0; i < tamanhoVetor ; i++){
-                fprintf(arquivo,"%d ",vetor[i]);
+            for(i = 0; i < tamanhoDst ; i++){
+                fprintf(arquivo,"%d ",dst[i]);
             }
             fprintf(arquivo,"\n\n");
             printf("\n\n");
@@ -159,7 +183,12 @@ void imprimeArquivo(int vetor[], int tamanhoVetor, char tipo, int imprimeSaida)
 }
 
 /**
- * offset is the deslocation of pos[0] in array.
+ * Divide um vetor em pedacos menores
+ * @param src vetor original
+ * @param tamanhoSrc tamanho do vetor original
+ * @param dst vetor menor, contendo parte do conteudo do vetor original
+ * @param numcpy quantidade de inteiros que serão copiados
+ * @param offset deslocamento no vetor original, para obter parte do conteudo do vetor original
  */
 void divideVetor(int src[], int tamanhoSrc, int dst[], int numcpy, int offset){
     int i;
@@ -169,7 +198,11 @@ void divideVetor(int src[], int tamanhoSrc, int dst[], int numcpy, int offset){
 }
 
 /**
- * offset is the deslocation of pos[0] in array.
+ * Junta pedacos menores de vetor em um único vetor
+ * @param src vetor menor original
+ * @param tamanhoSrc tamanho do vetor menor
+ * @param dst vetor completo, contendo todas as parte dos vetores menores
+ * @param offset deslocamento no vetor original, para nao sobrepor o conteudo dos vetors menores
  */
 void juntaVetores(int src[], int tamanhoSrc, int dst[], int offset){
     int i;
@@ -178,6 +211,18 @@ void juntaVetores(int src[], int tamanhoSrc, int dst[], int offset){
     }
 }
 
+/**
+ * Trecho principal do programa
+ * Executar conforme o exemplo abaixo:
+ * 
+ * mpirun -np 4 run 10 1
+
+* onde:
+    np eh o numero de processos
+    run é o nome do programa
+    10 eh o tamanho do vetor
+    1 informa se quer imprimir no arquivo de saida, 0 para não imprimir nada
+ */
 int main(int argc, char *argv[])
 {
     int imprimeSaida = atoi(argv[2]);
@@ -213,35 +258,44 @@ int main(int argc, char *argv[])
     }
     // Fim inicialização do MPI
 
-    tamVetSplit = tamanhoVetor / (proc_size-1); // tamanho de elementos do vetor
-    resTamVetSplit = tamanhoVetor % (proc_size-1); // ultimo pedaco vai ter tamVetSplit + resTamvetSplit
+    // Obtencao dos tamanhos t e r
+    tamVetSplit = tamanhoVetor / (proc_size-1); // tamanho t de elementos do vetor
+    resTamVetSplit = tamanhoVetor % (proc_size-1); // resto r da divisao de t por n-1
+    
     // Trecho paraleliza vetor
     int rank;
     int offset = 0;
-    // n pedaços do array
+    // inicializa array de tamanho t
     int *nVetSpl = (int *)malloc(tamVetSplit * sizeof(int));
-    // Ultimo pedaço do array
+    // calcula tamanho t + r
     int tamUltPos = tamVetSplit + resTamVetSplit;
+    // inicializa array de tamanho t + r
     int *ultPosVetSpl = (int *)malloc(tamUltPos * sizeof(int));
+    // Nodo mestre, so efetua a divisao do trabalho
     if(my_Rank == 0){
         if(imprimeSaida == 1){
             printf("Tamanho do vetor: %d\n", tamanhoVetor);
             printf("Tamanho n vetores: %d | tamanho do ultimo vetor: %d\n\n", tamVetSplit, tamUltPos);
         }
         imprimeArquivo(vetor,tamanhoVetor, 'o', imprimeSaida);
-        // Realiza o envio para os processadores
+        // Realiza o envio para os nos escravos
         for(rank = 1 ; rank < proc_size; rank++){
             if(rank == proc_size-1){
-                // último processador
+                // último escravo
+                // divide o vetor em pedaco menor de tamanho t + r
                 divideVetor(vetor, tamanhoVetor, ultPosVetSpl, tamUltPos, offset);
+                // envia para o escravo
                 ret = MPI_Send(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT, rank, 0, MPI_COMM_WORLD);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Send");
                 }
             } else {
-                // demais processadores
+                // demais escravos
+                // divide o vetor em pedaco menor de tamanho t
                 divideVetor(vetor, tamanhoVetor, nVetSpl, tamVetSplit, offset);
+                // atualiza o deslocamento offset
                 offset += tamVetSplit;
+                // envia para o escravo
                 ret = MPI_Send(nVetSpl, tamVetSplit * sizeof(int), MPI_INT, rank, 0, MPI_COMM_WORLD);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Send");
@@ -249,60 +303,75 @@ int main(int argc, char *argv[])
             }
         }
         offset = 0;
-        // faz o recebimento dos dados enviados
+        // faz o recebimento dos dados enviados pelos escravos
         for(rank = 1 ; rank < proc_size ; rank++){
             if(rank == proc_size-1){
-                // último processador
+                // último escravo
+                // recebe o vetor ordenado de tamanho t + r
                 ret = MPI_Recv(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT,rank,0,MPI_COMM_WORLD, &status);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Recv");
                 }
+                // junta no vetor de tamanho total
                 juntaVetores(ultPosVetSpl, tamUltPos, vetorFinal, offset);
             } else {
-                // demais processadores
+                // demais escravos
+                // recebe os vetores ordenados de tamanho t
                 ret = MPI_Recv(nVetSpl, tamVetSplit * sizeof(int), MPI_INT,rank,0,MPI_COMM_WORLD, &status);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Recv");
                 }
+                // junta no vetor de tamanho total
                 juntaVetores(nVetSpl, tamVetSplit, vetorFinal, offset);
+                // atualiza o deslocamento offset
                 offset += tamVetSplit;
             }
             
-        } 
+        }
+        // imprime vetor nao ordenado com n pedacos ordenados
         imprimeArquivo(vetorFinal,tamanhoVetor, 'n', imprimeSaida);
+        // ordena o vetor desordenado com n pedacos ordenados
         ordenaAposMpi(vetorFinal, tamanhoVetor);
         //sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
         if(imprimeSaida == 1){
             printf("Vetor ordenado impresso em saida.txt\t");
         }
+        // imprime no arquivo de saida o vetor final ordenado
         imprimeArquivo(vetorFinal,tamanhoVetor, 'r', imprimeSaida);
     } else {
+        // Nodos escravos, efetuam o processamento dos dados
+        // Identifica o rank do escravo
         ret = MPI_Comm_rank(MPI_COMM_WORLD, &my_Rank);
         if(ret != MPI_SUCCESS){
             mpi_err(1,"MPI_Comm_rank");
         }
+        // se for o ultimo escravo, recebeu o vetor de tamanho t + r
         if(my_Rank == proc_size-1){
-            // último processador
+            // ultimo escravo
             printf("Processado no [%s] rank %d\n", hostname, my_Rank);
+            // recebe o vetor ordenado de tamanho t + r
             ret = MPI_Recv(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT,MPI_ANY_SOURCE,0,MPI_COMM_WORLD, &status);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Recv");
             }
+            // realiza ordenamento com bubble sort
             bubbleSort(ultPosVetSpl, tamUltPos);
-            
+            // envia o vetor de tamanho t + r ordenado para o no mestre
             ret = MPI_Send(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT, 0, 0, MPI_COMM_WORLD);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Send");
             }
-        } else {
-            // demais processadores
+        } else { // senao, recebeu o vetor de tamanho t
+            // demais escravos
             printf("Processado no [%s] rank %d\n", hostname, my_Rank);
+            // recebe o vetor ordenado de tamanho t
             ret = MPI_Recv(nVetSpl, tamVetSplit * sizeof(int), MPI_INT,MPI_ANY_SOURCE,0,MPI_COMM_WORLD, &status);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Recv");
             }
+            // realiza ordenamento com bubble sort
             bubbleSort(nVetSpl, tamVetSplit);
-            
+            // envia o vetor de tamanho t ordenado para o no mestre
             ret = MPI_Send(nVetSpl, tamVetSplit * sizeof(int), MPI_INT, 0, 0, MPI_COMM_WORLD);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Send");
@@ -311,6 +380,7 @@ int main(int argc, char *argv[])
         
     }
     
+    // Finaliza o MPI
     ret = MPI_Finalize();
     if(ret != MPI_SUCCESS){
         mpi_err(1,"MPI_Finalize");
