@@ -4,15 +4,32 @@
 #include <time.h>
 #include "utils.h"
 
+// Algoritmo BubbleSort obtido em:
+// https://www.geeksforgeeks.org/bubble-sort/
+void swap(int *xp, int *yp) 
+{ 
+	int temp = *xp; 
+	*xp = *yp; 
+	*yp = temp; 
+}
+
+void bubbleSort(int arr[], int n) 
+{ 
+int i, j; 
+for (i = 0; i < n-1; i++)	 
+	for (j = 0; j < n-i-1; j++) 
+		if (arr[j] > arr[j+1]) 
+			swap(&arr[j], &arr[j+1]); 
+} 
+
+// Algoritmo HeapSort obtido em:
+// https://ide.geeksforgeeks.org/rFO7Lm
 // A heap has current size and array of elements
 struct MaxHeap
 {
     int size;
     int* array;
 };
-
-// A utility function to swap to integers
-void swap(int* a, int* b) { int t = *a; *a = *b;  *b = t; }
 
 // The main function to heapify a Max Heap. The function
 // assumes that everything under given root (element at
@@ -76,20 +93,6 @@ void heapSort(int* array, int size)
 
         // Finally, heapify the root of tree.
         maxHeapify(maxHeap, 0);
-    }
-}
-
-void bubbleSort (int vetor[], int n) {
-    int k, j, aux;
-
-    for (k = 1; k < n; k++) {
-        for (j = 0; j < n - 1; j++) {
-            if (vetor[j] > vetor[j + 1]) {
-                aux          = vetor[j];
-                vetor[j]     = vetor[j + 1];
-                vetor[j + 1] = aux;
-            }
-        }
     }
 }
 
