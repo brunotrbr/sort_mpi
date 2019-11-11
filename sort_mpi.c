@@ -183,6 +183,22 @@ void imprimeArquivo(int dst[], int tamanhoDst, char tipo, int imprimeSaida)
 }
 
 /**
+ * Imprime o tempo de execucao do programa
+ * @param tempo tempo de execucao em segundos
+ */
+void imprimeTempoExecucao(double tempo){
+    FILE * arquivo;
+    arquivo = fopen("saida.txt", "a+");
+    int i;
+
+    fprintf(arquivo, "%s\n\t","Tempo de execucao em segundos:");
+    fprintf(arquivo,"%f ",tempo);
+    fprintf(arquivo,"\n\n");
+
+    fclose(arquivo);
+}
+
+/**
  * Divide um vetor em pedacos menores
  * @param src vetor original
  * @param tamanhoSrc tamanho do vetor original
@@ -236,6 +252,8 @@ int main(int argc, char *argv[])
     int resTamVetSplit;
     int *vetor = (int *)malloc(tamanhoVetor * sizeof(int));
     int *vetorFinal = (int *)calloc(tamanhoVetor, sizeof(int));
+    clock_t inicio, fim;
+    double tempoExecucao;
     
     inicializaVetor(vetor, tamanhoVetor);
 
@@ -278,6 +296,7 @@ int main(int argc, char *argv[])
             printf("Tamanho n vetores: %d | tamanho do ultimo vetor: %d\n\n", tamVetSplit, tamUltPos);
         }
         imprimeArquivo(vetor,tamanhoVetor, 'o', imprimeSaida);
+        inicio = clock();
         // Realiza o envio para os nos escravos
         for(rank = 1 ; rank < proc_size; rank++){
             if(rank == proc_size-1){
@@ -338,6 +357,9 @@ int main(int argc, char *argv[])
         }
         // imprime no arquivo de saida o vetor final ordenado
         imprimeArquivo(vetorFinal,tamanhoVetor, 'r', imprimeSaida);
+        fim = clock();
+        tempoExecucao = (fim - inicio) * 1000.0 / CLOCKS_PER_SEC;
+        imprimeTempoExecucao(tempoExecucao);
     } else {
         // Nodos escravos, efetuam o processamento dos dados
         // Identifica o rank do escravo
