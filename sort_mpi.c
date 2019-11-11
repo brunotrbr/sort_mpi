@@ -24,6 +24,81 @@ for (i = 0; i < n-1; i++)
 			swap(&arr[j], &arr[j+1]); 
 } 
 
+// Algoritmo HeapSort obtido em:
+// https://ide.geeksforgeeks.org/rFO7Lm
+// A heap has current size and array of elements
+struct MaxHeap
+{
+    int size;
+    int* array;
+};
+
+// The main function to heapify a Max Heap. The function
+// assumes that everything under given root (element at
+// index idx) is already heapified
+void maxHeapify(struct MaxHeap* maxHeap, int idx)
+{
+    int largest = idx;  // Initialize largest as root
+    int left = (idx << 1) + 1;  // left = 2*idx + 1
+    int right = (idx + 1) << 1; // right = 2*idx + 2
+
+    // See if left child of root exists and is greater than
+    // root
+    if (left < maxHeap->size &&
+        maxHeap->array[left] > maxHeap->array[largest])
+        largest = left;
+
+    // See if right child of root exists and is greater than
+    // the largest so far
+    if (right < maxHeap->size &&
+        maxHeap->array[right] > maxHeap->array[largest])
+        largest = right;
+
+    // Change root, if needed
+    if (largest != idx)
+    {
+        swap(&maxHeap->array[largest], &maxHeap->array[idx]);
+        maxHeapify(maxHeap, largest);
+    }
+}
+
+// A utility function to create a max heap of given capacity
+struct MaxHeap* createAndBuildHeap(int *array, int size)
+{
+    int i;
+    struct MaxHeap* maxHeap =
+              (struct MaxHeap*) malloc(sizeof(struct MaxHeap));
+    maxHeap->size = size;   // initialize size of heap
+    maxHeap->array = array; // Assign address of first element of array
+
+    // Start from bottommost and rightmost internal mode and heapify all
+    // internal modes in bottom up way
+    for (i = (maxHeap->size - 2) / 2; i >= 0; --i)
+        maxHeapify(maxHeap, i);
+    return maxHeap;
+}
+
+// The main function to sort an array of given size
+void heapSort(int* array, int size)
+{
+    // Build a heap from the input data.
+    struct MaxHeap* maxHeap = createAndBuildHeap(array, size);
+
+    // Repeat following steps while heap size is greater than 1.
+    // The last element in max heap will be the minimum element
+    while (maxHeap->size > 1)
+    {
+        // The largest item in Heap is stored at the root. Replace
+        // it with the last item of the heap followed by reducing the
+        // size of heap by 1.
+        swap(&maxHeap->array[0], &maxHeap->array[maxHeap->size - 1]);
+        --maxHeap->size;  // Reduce heap size
+
+        // Finally, heapify the root of tree.
+        maxHeapify(maxHeap, 0);
+    }
+}
+
 /**
  * Inicializa o vetor com número randômicos inteiros positivos
  * @param dst vetor que vai ser inicializado
@@ -35,6 +110,15 @@ void inicializaVetor(int dst[], int tamanhoDst){
     for(i = 0 ; i < tamanhoDst ; i++){
         dst[i] = rand() % (tamanhoDst * 100);
     }
+}
+
+/**
+* Ordena o vetor usando o algoritmo HeapSort
+* @param dst vetor que vai ser ordenado
+* @param tamanhoDst tamanho do vetor
+*/
+void ordenaAposMpi(int dst[], int tamanhoDst){
+    heapSort(dst,tamanhoDst);
 }
 
 /**
@@ -238,7 +322,7 @@ int main(int argc, char *argv[])
                 // divide o vetor em pedaco menor de tamanho t + r
                 divideVetor(vetor, tamanhoVetor, ultPosVetSpl, tamUltPos, offset);
                 // envia para o escravo
-                ret = MPI_Send(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT, rank, 0, MPI_COMM_WORLD);
+                ret = MPI_Send(ultPosVetSpl, tamUltPos * sizeof(int), MPI_CHAR, rank, 0, MPI_COMM_WORLD);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Send");
                 }
@@ -249,7 +333,7 @@ int main(int argc, char *argv[])
                 // atualiza o deslocamento offset
                 offset += tamVetSplit;
                 // envia para o escravo
-                ret = MPI_Send(nVetSpl, tamVetSplit * sizeof(int), MPI_INT, rank, 0, MPI_COMM_WORLD);
+                ret = MPI_Send(nVetSpl, tamVetSplit * sizeof(int), MPI_CHAR, rank, 0, MPI_COMM_WORLD);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Send");
                 }
@@ -261,7 +345,7 @@ int main(int argc, char *argv[])
             if(rank == proc_size-1){
                 // último escravo
                 // recebe o vetor ordenado de tamanho t + r
-                ret = MPI_Recv(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT,rank,0,MPI_COMM_WORLD, &status);
+                ret = MPI_Recv(ultPosVetSpl, tamUltPos * sizeof(int), MPI_CHAR,rank,0,MPI_COMM_WORLD, &status);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Recv");
                 }
@@ -270,7 +354,7 @@ int main(int argc, char *argv[])
             } else {
                 // demais escravos
                 // recebe os vetores ordenados de tamanho t
-                ret = MPI_Recv(nVetSpl, tamVetSplit * sizeof(int), MPI_INT,rank,0,MPI_COMM_WORLD, &status);
+                ret = MPI_Recv(nVetSpl, tamVetSplit * sizeof(int), MPI_CHAR,rank,0,MPI_COMM_WORLD, &status);
                 if(ret != MPI_SUCCESS){
                     mpi_err(1,"MPI_Recv");
                 }
@@ -284,9 +368,10 @@ int main(int argc, char *argv[])
         // imprime vetor nao ordenado com n pedacos ordenados
         imprimeArquivo(vetorFinal,tamanhoVetor, 'n', imprimeSaida);
         // ordena o vetor desordenado com n pedacos ordenados
-        sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
+        ordenaAposMpi(vetorFinal,tamanhoVetor);
+        //sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
         if(imprimeSaida == 1){
-            printf("Vetor ordenado impresso em saida.txt\t");
+            printf("Vetor ordenado impresso em saida.txt\n");
         }
         fim = clock();
         tempoExecucao = (fim - inicio) / CLOCKS_PER_SEC;
@@ -310,14 +395,14 @@ int main(int argc, char *argv[])
             // ultimo escravo
             printf("Processado no [%s] rank %d\n", hostname, my_Rank);
             // recebe o vetor ordenado de tamanho t + r
-            ret = MPI_Recv(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT,MPI_ANY_SOURCE,0,MPI_COMM_WORLD, &status);
+            ret = MPI_Recv(ultPosVetSpl, tamUltPos * sizeof(int), MPI_CHAR,MPI_ANY_SOURCE,0,MPI_COMM_WORLD, &status);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Recv");
             }
             // realiza ordenamento com bubble sort
             bubbleSort(ultPosVetSpl, tamUltPos);
             // envia o vetor de tamanho t + r ordenado para o no mestre
-            ret = MPI_Send(ultPosVetSpl, tamUltPos * sizeof(int), MPI_INT, 0, 0, MPI_COMM_WORLD);
+            ret = MPI_Send(ultPosVetSpl, tamUltPos * sizeof(int), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Send");
             }
@@ -325,14 +410,14 @@ int main(int argc, char *argv[])
             // demais escravos
             printf("Processado no [%s] rank %d\n", hostname, my_Rank);
             // recebe o vetor ordenado de tamanho t
-            ret = MPI_Recv(nVetSpl, tamVetSplit * sizeof(int), MPI_INT,MPI_ANY_SOURCE,0,MPI_COMM_WORLD, &status);
+            ret = MPI_Recv(nVetSpl, tamVetSplit * sizeof(int), MPI_CHAR,MPI_ANY_SOURCE,0,MPI_COMM_WORLD, &status);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Recv");
             }
             // realiza ordenamento com bubble sort
             bubbleSort(nVetSpl, tamVetSplit);
             // envia o vetor de tamanho t ordenado para o no mestre
-            ret = MPI_Send(nVetSpl, tamVetSplit * sizeof(int), MPI_INT, 0, 0, MPI_COMM_WORLD);
+            ret = MPI_Send(nVetSpl, tamVetSplit * sizeof(int), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
             if(ret != MPI_SUCCESS){
                 mpi_err(1,"MPI_Send");
             }

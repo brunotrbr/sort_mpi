@@ -4,7 +4,7 @@
 #include <err.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <mpi.h>
+#include "mpi.h"
 
 #ifdef __cplusplus
 export C {
@@ -114,3 +114,4 @@ sort_after_mpi(unsigned int *v, size_t vlen, int slice, int proc_size);
 }
 #endif
 #endif
+

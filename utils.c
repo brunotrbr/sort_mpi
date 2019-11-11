@@ -82,6 +82,7 @@ sort_after_mpi(unsigned int *v, size_t vlen, int slice, int proc_size)
 {
 	unsigned int **p;
 	unsigned int **plimit;
+	unsigned int *vcopy;
 	size_t i;
 #ifdef DISTSORT_DEBUG
 	size_t j;
@@ -98,13 +99,19 @@ sort_after_mpi(unsigned int *v, size_t vlen, int slice, int proc_size)
 	if (plimit == NULL)
 		err(1, "calloc");
 
+	vcopy = calloc(vlen, sizeof(*vcopy));
+	if (vcopy == NULL)
+		err(1, "calloc");
+
+	memcpy(vcopy, v, vlen * sizeof(*v));
+
 	for (i = 0; i < plen; i++) {
-		p[i] = &v[i * szslice];
+		p[i] = &vcopy[i * szslice];
 		/* fix last case */
 		if (i == (plen - 1))
-			plimit[i] = &v[vlen];
+			plimit[i] = &vcopy[vlen];
 		else
-			plimit[i] = &v[(i + 1) * szslice];
+			plimit[i] = &vcopy[(i + 1) * szslice];
 #ifdef DISTSORT_DEBUG
 		printf("p %zu plimit %zu\n", i * szslice,
 		    i == (plen - 1) ? vlen : (i + 1) * szslice);
@@ -119,12 +126,13 @@ sort_after_mpi(unsigned int *v, size_t vlen, int slice, int proc_size)
 			printf("%u ", p[j] == NULL ? UINT_MAX : *(p[j]));
 		printf("\n");
 #endif
-		v[i++] = pick_one_p(v, vlen, p, plimit, plen, &end);	
+		v[i++] = pick_one_p(vcopy, vlen, p, plimit, plen, &end);	
 		if (v[i - 2] > v[i - 1])
 			err(1, "error: pos %zu %u %zu %u",
 			    i - 2, v[i - 2], i - 1, v[i - 1]);
 	}
 	
+	free(vcopy);
 	free(plimit);
 	free(p);
 }
