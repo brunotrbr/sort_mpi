@@ -183,16 +183,34 @@ void imprimeArquivo(int dst[], int tamanhoDst, char tipo, int imprimeSaida)
 }
 
 /**
+ * Verifica se o elemento na posicao i do vetor é maior que i+1.
+ * Se for, encerra o programa.
+ * Dessa forma, não é necessário imprimir o vetor para confirmar a ordenação
+ * @param vetor vetor a ser verificado
+ * @param tamanhoVetor tamanho do vetor a ser verificado
+ */
+void verificaVetor(int vetor[], int tamanhoVetor){
+    int i;
+    for(i = 0 ; i < tamanhoVetor -2 ; i++){
+        if(vetor[i] > vetor[i+1]){
+            printf("vetor[%d] = %d > vetor[%d] = %d\n",i,vetor[i],i+1,vetor[i+1]);
+            exit(-2);
+        }
+    }
+}
+
+/**
  * Imprime o tempo de execucao do programa
  * @param tempo tempo de execucao em segundos
+ * @param numeroProcesso numero de processos executados
  */
-void imprimeTempoExecucao(double tempo){
+void imprimeTempoExecucao(double tempo, int numeroProcessos){
     FILE * arquivo;
-    arquivo = fopen("saida.txt", "a+");
-    int i;
-
-    fprintf(arquivo, "%s\n\t","Tempo de execucao em segundos:");
-    fprintf(arquivo,"%f ",tempo);
+    arquivo = fopen("tempo.txt", "a+");
+    fprintf(arquivo,"%s: ", "Numero de processos");
+    fprintf(arquivo,"%d\n",numeroProcessos);
+    fprintf(arquivo, "%s ","Tempo de execucao em segundos:");
+    fprintf(arquivo,"%f",tempo);
     fprintf(arquivo,"\n\n");
 
     fclose(arquivo);
@@ -291,10 +309,9 @@ int main(int argc, char *argv[])
     int *ultPosVetSpl = (int *)malloc(tamUltPos * sizeof(int));
     // Nodo mestre, so efetua a divisao do trabalho
     if(my_Rank == 0){
-        if(imprimeSaida == 1){
-            printf("Tamanho do vetor: %d\n", tamanhoVetor);
-            printf("Tamanho n vetores: %d | tamanho do ultimo vetor: %d\n\n", tamVetSplit, tamUltPos);
-        }
+        printf("Tamanho do vetor: %d\n", tamanhoVetor);
+        printf("Tamanho n vetores: %d | tamanho do ultimo vetor: %d\n\n", tamVetSplit, tamUltPos);
+        // Imprime o vetor original
         imprimeArquivo(vetor,tamanhoVetor, 'o', imprimeSaida);
         inicio = clock();
         // Realiza o envio para os nos escravos
@@ -350,16 +367,20 @@ int main(int argc, char *argv[])
         // imprime vetor nao ordenado com n pedacos ordenados
         imprimeArquivo(vetorFinal,tamanhoVetor, 'n', imprimeSaida);
         // ordena o vetor desordenado com n pedacos ordenados
-        ordenaAposMpi(vetorFinal, tamanhoVetor);
-        //sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
+        sort_after_mpi(vetorFinal,tamanhoVetor,tamVetSplit,proc_size);
         if(imprimeSaida == 1){
             printf("Vetor ordenado impresso em saida.txt\t");
         }
+        fim = clock();
+        tempoExecucao = (fim - inicio) / CLOCKS_PER_SEC;
+        // imprime no arquivo tempo.txt o tempo de execucao do programa
+        imprimeTempoExecucao(tempoExecucao, proc_size);
+        printf("Tempo impresso em tempo.txt\n");
         // imprime no arquivo de saida o vetor final ordenado
         imprimeArquivo(vetorFinal,tamanhoVetor, 'r', imprimeSaida);
-        fim = clock();
-        tempoExecucao = (fim - inicio) * 1000.0 / CLOCKS_PER_SEC;
-        imprimeTempoExecucao(tempoExecucao);
+        // verifica se o vetor possui algum elemento nao ordenado, para
+        // confirmar a ordenacao sem ser necessario imprimir o vetor
+        verificaVetor(vetorFinal,tamanhoVetor);
     } else {
         // Nodos escravos, efetuam o processamento dos dados
         // Identifica o rank do escravo

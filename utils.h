@@ -4,7 +4,7 @@
 #include <err.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <mpi.h>"
+#include <mpi.h>
 
 #ifdef __cplusplus
 export C {
