@@ -9,7 +9,7 @@ Execute o programa conforme exemplo abaixo:
 
 onde:
     
-    np eh o numero de processos
+    np é o numero de processos (neste caso, 4 está considerando o nó mestre. Para paralelizar com 4 processos, informe np 5).
 
     run é o nome do programa
 
